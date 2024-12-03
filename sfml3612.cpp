@@ -11,44 +11,112 @@
 #include <vector>
 #include <memory>
 
+
+class vec4f {
+public:
+    float x, y, z, w;
+    vec4f() {
+        x = 0.f;
+        y = 0.f;
+        z = 0.f;
+        w = 0.f;
+    }
+    vec4f(float x, float y, float z,float w) : x(x), y(y), z(z), w(w) {};
+};
 class mat4f {
-private:
+public:
     std::vector<float> mat = 
     {
-        0.f,0.f,0.f,0.f,
-        0.f,0.f,0.f,0.f,
-        0.f,0.f,0.f,0.f,
-        0.f,0.f,0.f,0.f
+        0.f,0.f,0.f,0.f,    //0, 1, 2, 3,   n
+        0.f,0.f,0.f,0.f,    //4, 5, 6, 7,   |
+        0.f,0.f,0.f,0.f,    //8, 9, 10,11,  V
+        0.f,0.f,0.f,0.f     //12,13,14,15   m-->
     };
-public:
-    mat4f(std::vector<float> aR, std::vector<float> bR, std::vector<float> cR, std::vector<float> dR) 
-    {
-        mat =
-        {
-            aR[0],aR[1],aR[2],aR[3],    //0, 1, 2, 3,   n
-            bR[0],bR[1],bR[2],bR[3],    //4, 5, 6, 7,   |
-            cR[0],cR[1],cR[2],cR[3],    //8, 9, 10,11,  V
-            dR[0],dR[1],dR[2],dR[3]     //12,13,14,15   m-->
-        };
-    }
+    mat4f() {};
     float get(int n, int m) {
         return mat.at(4*(n-1)+(m-1));
     }
 };
 
+vec4f mltplyMatVec(mat4f mat, vec4f vec) {
+    vec4f result;
+    result.x = mat.mat[0]  * vec.x + mat.mat[1]  * vec.y + mat.mat[2]  * vec.z + mat.mat[3]  * vec.w;
+    result.y = mat.mat[4]  * vec.x + mat.mat[5]  * vec.y + mat.mat[6]  * vec.z + mat.mat[7]  * vec.w;
+    result.z = mat.mat[8]  * vec.x + mat.mat[9]  * vec.y + mat.mat[10] * vec.z + mat.mat[11] * vec.w;
+    result.w = mat.mat[12] * vec.x + mat.mat[13] * vec.y + mat.mat[14] * vec.z + mat.mat[15] * vec.w;
+    return result;
+}
+mat4f mltplyMatMat(mat4f mat1, mat4f mat2) {
+    mat4f result;
+    result.mat[0 ] = mat1.mat[0 ] * mat2.mat[0 ] + mat1.mat[1 ] * mat2.mat[4 ] + mat1.mat[2 ] * mat2.mat[8 ] + mat1.mat[3 ] * mat2.mat[12];//
+    result.mat[1 ] = mat1.mat[0 ] * mat2.mat[1 ] + mat1.mat[1 ] * mat2.mat[5 ] + mat1.mat[2 ] * mat2.mat[9 ] + mat1.mat[3 ] * mat2.mat[13];//
+    result.mat[2 ] = mat1.mat[0 ] * mat2.mat[2 ] + mat1.mat[1 ] * mat2.mat[6 ] + mat1.mat[2 ] * mat2.mat[10] + mat1.mat[3 ] * mat2.mat[14];//
+    result.mat[3 ] = mat1.mat[0 ] * mat2.mat[3 ] + mat1.mat[1 ] * mat2.mat[7 ] + mat1.mat[2 ] * mat2.mat[11] + mat1.mat[3 ] * mat2.mat[15];//
+
+    result.mat[4 ] = mat1.mat[4 ] * mat2.mat[0 ] + mat1.mat[5 ] * mat2.mat[4 ] + mat1.mat[6 ] * mat2.mat[8 ] + mat1.mat[7 ] * mat2.mat[12];//
+    result.mat[5 ] = mat1.mat[4 ] * mat2.mat[1 ] + mat1.mat[5 ] * mat2.mat[5 ] + mat1.mat[6 ] * mat2.mat[9 ] + mat1.mat[7 ] * mat2.mat[13];//
+    result.mat[6 ] = mat1.mat[4 ] * mat2.mat[2 ] + mat1.mat[5 ] * mat2.mat[6 ] + mat1.mat[6 ] * mat2.mat[10] + mat1.mat[7 ] * mat2.mat[14];//
+    result.mat[7 ] = mat1.mat[4 ] * mat2.mat[3 ] + mat1.mat[5 ] * mat2.mat[7 ] + mat1.mat[6 ] * mat2.mat[11] + mat1.mat[7 ] * mat2.mat[15];//
+
+    result.mat[8 ] = mat1.mat[8 ] * mat2.mat[0 ] + mat1.mat[9 ] * mat2.mat[4 ] + mat1.mat[10] * mat2.mat[8 ] + mat1.mat[11] * mat2.mat[12];//
+    result.mat[9 ] = mat1.mat[8 ] * mat2.mat[1 ] + mat1.mat[9 ] * mat2.mat[5 ] + mat1.mat[10] * mat2.mat[9 ] + mat1.mat[11] * mat2.mat[13];//
+    result.mat[10] = mat1.mat[8 ] * mat2.mat[2 ] + mat1.mat[9 ] * mat2.mat[6 ] + mat1.mat[10] * mat2.mat[10] + mat1.mat[11] * mat2.mat[14];//
+    result.mat[11] = mat1.mat[8 ] * mat2.mat[3 ] + mat1.mat[9 ] * mat2.mat[7 ] + mat1.mat[10] * mat2.mat[11] + mat1.mat[11] * mat2.mat[15];//
+
+    result.mat[12] = mat1.mat[12] * mat2.mat[0 ] + mat1.mat[13] * mat2.mat[4 ] + mat1.mat[14] * mat2.mat[8 ] + mat1.mat[15] * mat2.mat[12];//
+    result.mat[13] = mat1.mat[12] * mat2.mat[1 ] + mat1.mat[13] * mat2.mat[5 ] + mat1.mat[14] * mat2.mat[9 ] + mat1.mat[15] * mat2.mat[13];//
+    result.mat[14] = mat1.mat[12] * mat2.mat[2 ] + mat1.mat[13] * mat2.mat[6 ] + mat1.mat[14] * mat2.mat[10] + mat1.mat[15] * mat2.mat[14];//
+    result.mat[15] = mat1.mat[12] * mat2.mat[3 ] + mat1.mat[13] * mat2.mat[7 ] + mat1.mat[14] * mat2.mat[11] + mat1.mat[15] * mat2.mat[15];//
+
+    return result;
+}
+mat4f Tmat(mat4f mat) {
+    mat4f result;
+    result.mat[0 ] = mat.mat[0]; result.mat[1 ] = mat.mat[4]; result.mat[2 ] = mat.mat[8 ]; result.mat[3 ] = mat.mat[12];     //0, 1, 2, 3,   n
+    result.mat[4 ] = mat.mat[1]; result.mat[5 ] = mat.mat[5]; result.mat[6 ] = mat.mat[9 ]; result.mat[7 ] = mat.mat[13];     //4, 5, 6, 7,   |
+    result.mat[8 ] = mat.mat[2]; result.mat[9 ] = mat.mat[6]; result.mat[10] = mat.mat[10]; result.mat[11] = mat.mat[14];     //8, 9, 10,11,  V
+    result.mat[12] = mat.mat[3]; result.mat[13] = mat.mat[7]; result.mat[14] = mat.mat[11]; result.mat[15] = mat.mat[15];     //12,13,14,15   m-->
+    return result;
+}
+
+sf::Vector3f toCameraPos(vec4f CamCoordPos, float aspect,float Zfar,float Znear,int fov) {
+    vec4f inCamPos;
+    mat4f Pmat;
+    Pmat.mat = {
+        float(1 / (tan(fov / 2) * aspect)), 0.f , 0.f , 0.f,
+        0.f,     float(1 / (tan(fov / 2)))    , 0.f , 0.f,
+        0.f,0.f,((Zfar + Znear) / (Znear - Zfar)), ((2 * Zfar * Znear) / (Znear - Zfar)),
+        0.f,0.f,                              -1.f , 0.f
+    };
+    inCamPos = mltplyMatVec(Pmat, CamCoordPos);
+    return { (inCamPos.x / inCamPos.w), (inCamPos.y / inCamPos.w), (inCamPos.z / inCamPos.w) };
+}
+sf::Vector2f inScrnPospx(float x, float y,int W,int H) {
+    return { ( ( (x - 1) / 2) * W),( ( (1 - y) / 2) * H) };
+}
+
 class camera {
 private:
     unsigned short fov;
-    sf::Vector3f position;
-    sf::Vector3f normalVec;
+    mat4f ViewMat;
 public:
-    camera(): position({ 0.f,1.f,0.f }), normalVec({0.f,0.f,1.f}),fov(85) {};
+    camera(int fov) : fov(fov) {
+        ViewMat.mat = { 1.f, 0.f, 0.f, 0.f,    //rvecx rvecy rvecz -camposvecx
+                        0.f, 1.f, 0.f,-1.f,    //uvecx uvecy uvecz -camposvecy
+                        0.f, 0.f, 1.f, 0.f,    //vvecx vvecy vvecz -camposvecz
+                        0.f, 0.f, 0.f, 1.f     //0     0     0      1
+        };
+    };
 
-    void move(float x, float y, float z) {
-        position += sf::Vector3f{x,y,z};
+    void moveTo(float x, float y, float z) {
+        ViewMat.mat[3]  = -x;
+        ViewMat.mat[7]  = -y;
+        ViewMat.mat[11] = -z;
     }
-    void rotate(float x, float y) {
-        normalVec += {x,y,0.f};
+    vec4f onScrnPos(sf::Vector3f pos) {
+        vec4f toScrnPos;
+        toScrnPos = mltplyMatVec(ViewMat, vec4f(pos.x, pos.y, pos.z, 1.f) );
+        return toScrnPos;
     }
 };
 
@@ -69,7 +137,8 @@ int main()
     
 
     bool Mleft = false, Mright = false, Mmid = false;
-    unsigned short W = 1600, H = 900;
+    unsigned short W = 1600, H = 900,fov=90;
+    float aspect = W / H,Zfar=1000.f,Znear=1.f;
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -106,7 +175,6 @@ int main()
 
         if (event.type == sf::Event::MouseMoved) {
             sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-            Camera1().rotate()
         }
 
         window.clear();
