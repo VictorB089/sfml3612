@@ -1,11 +1,14 @@
 ﻿  sfml3612.cpp
+C:\Users\DesktopV\source\repos\sfml3612\sfml3612.cpp(152,18): warning C4244: инициализация: преобразование "int" в "float", возможна потеря данных
 sfml-graphics-s-d.lib(Color.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(Color.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
+sfml-graphics-s-d.lib(VertexArray.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(VertexArray.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
 sfml-graphics-s-d.lib(RenderTarget.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(RenderTarget.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
 sfml-graphics-s-d.lib(RenderWindow.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(RenderWindow.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
+sfml-graphics-s-d.lib(RenderStates.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(RenderStates.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
+sfml-graphics-s-d.lib(Vertex.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(Vertex.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
 sfml-graphics-s-d.lib(Transform.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(Transform.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
 sfml-graphics-s-d.lib(View.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(View.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
 sfml-graphics-s-d.lib(BlendMode.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(BlendMode.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
-sfml-graphics-s-d.lib(Vertex.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(Vertex.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
 sfml-graphics-s-d.lib(Shader.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(Shader.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
 sfml-graphics-s-d.lib(Texture.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(Texture.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
 sfml-graphics-s-d.lib(VertexBuffer.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(VertexBuffer.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных

@@ -79,7 +79,7 @@ mat4f Tmat(mat4f mat) {
     return result;
 }
 
-sf::Vector3f toCameraPos(vec4f CamCoordPos, float aspect,float Zfar,float Znear,int fov) {
+sf::Vector3f toCameraPos(vec4f CamCoordPos, float aspect,float Zfar,float Znear,int fov) {//UPD pipeline cameracoords->clipcoords->normalcoords
     vec4f inCamPos;
     mat4f Pmat;
     Pmat.mat = {
@@ -91,8 +91,16 @@ sf::Vector3f toCameraPos(vec4f CamCoordPos, float aspect,float Zfar,float Znear,
     inCamPos = mltplyMatVec(Pmat, CamCoordPos);
     return { (inCamPos.x / inCamPos.w), (inCamPos.y / inCamPos.w), (inCamPos.z / inCamPos.w) };
 }
-sf::Vector2f inScrnPospx(float x, float y,int W,int H) {
+sf::Vector2f toScrnPospx(float x, float y,int W,int H) {//UPD pipeline normalcoords->screencoords
     return { ( ( (x - 1) / 2) * W),( ( (1 - y) / 2) * H) };
+}
+
+sf::VertexArray drawPoligons(std::vector<sf::Vector2f> VBO) {
+    sf::VertexArray poligons(sf::Triangles,VBO.size());
+    for (int i = 0; i < VBO.size(); i++) {
+        poligons[i].position = VBO[i];
+    }
+    return poligons;
 }
 
 class camera {
@@ -113,7 +121,7 @@ public:
         ViewMat.mat[7]  = -y;
         ViewMat.mat[11] = -z;
     }
-    vec4f toCamCoords(sf::Vector3f pos) {
+    vec4f toCamCoords(sf::Vector3f pos) {//UPD pipeline wrldcoords->cameracoords
         vec4f inCamCoords;
         inCamCoords = mltplyMatVec(ViewMat, vec4f(pos.x, pos.y, pos.z, 1.f) );
         return inCamCoords;
@@ -127,9 +135,12 @@ private:
     float groundLevel = 0.f;
 public:
     world() {}
-    void draw(sf::RenderWindow window) {
-    //window.draw()
-    }
+    std::vector<sf::Vector3f> worldFloor = {
+        {5000.f,0.f,-5000.f},
+        {5000.f,0.f,5000.f},
+        {-5000.f,0.f,-5000.f},
+        {-5000.f,0.f,5000.f}
+    };
 };
 
 int main()
@@ -139,6 +150,8 @@ int main()
     bool Mleft = false, Mright = false, Mmid = false;
     unsigned short W = 1600, H = 900,fov=90;
     float aspect = W / H,Zfar=1000.f,Znear=1.f;
+
+    world Floor1;
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -152,8 +165,15 @@ int main()
     window.setMouseCursorVisible(false);
     window.setMouseCursorGrabbed(true);
     
-    camera Camera1();
-
+    camera Camera1(fov);
+    std::vector<vec4f> tempv4fcoords;
+    std::vector<sf::Vector3f> tempv3fcoords;
+    std::vector<sf::Vector2f> tempv2fcoords;
+    tempv4fcoords.resize(100);
+    tempv3fcoords.resize(100);
+    tempv2fcoords.resize(100);
+    
+    sf::VertexArray VAB;
 
     while (window.isOpen()) {
 
@@ -177,8 +197,22 @@ int main()
             sf::Vector2i mousePos = sf::Mouse::getPosition(window);
         }
 
-        window.clear();
+        //UPD pipeline wrldcoords->cameracoords->clipcoords->normalcoords->screencoords
+        for (int i = 0; i < Floor1.worldFloor.size(); i++)
+        {
+            tempv4fcoords[i] = Camera1.toCamCoords(Floor1.worldFloor[i]);//wrldcoords->cameracoords
+        };
+        for (int i = 0; i < tempv4fcoords.size(); i++) {
+            tempv3fcoords[i] = toCameraPos(tempv4fcoords[i], aspect, Zfar, Znear, fov);//cameracoords->clipcoords->normalcoords
+        };
+        for (int i = 0; i < tempv3fcoords.size(); i++) {
+            tempv2fcoords[i] = toScrnPospx(tempv3fcoords[i].x, tempv3fcoords[i].y,W,H);//normalcoords->screencoords
+        }
+        VAB = drawPoligons(tempv2fcoords);//screencoords->poligons->VertexArrayBuffer VAB
+        //
 
+        window.clear();
+        window.draw(VAB);
         window.display();
 
 
