@@ -113,10 +113,10 @@ public:
         ViewMat.mat[7]  = -y;
         ViewMat.mat[11] = -z;
     }
-    vec4f onScrnPos(sf::Vector3f pos) {
-        vec4f toScrnPos;
-        toScrnPos = mltplyMatVec(ViewMat, vec4f(pos.x, pos.y, pos.z, 1.f) );
-        return toScrnPos;
+    vec4f toCamCoords(sf::Vector3f pos) {
+        vec4f inCamCoords;
+        inCamCoords = mltplyMatVec(ViewMat, vec4f(pos.x, pos.y, pos.z, 1.f) );
+        return inCamCoords;
     }
 };
 
