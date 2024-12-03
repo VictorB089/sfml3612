@@ -195,12 +195,12 @@ private:
 public:
     world() {}
     std::vector<sf::Vector3f> worldFloor = {
-        {10.f,0.f,10.f},
-        {10.f,0.f,0.f},
-        {0.f,0.f,0.f},
-        {10.f,0.f,0.f},
-        {0.f,0.f,0.f},
-        {-10.f,0.f,-10.f}
+        {10.f,2.f,10.f},
+        {-10.f,2.f,10.f},
+        {0.f,10.f,10.f},
+        //{10.f,0.f,0.f},
+        //{0.f,0.f,0.f},
+        //{-10.f,0.f,-10.f}
     };
     std::vector<sf::Color> floorColor = {
         {100,100,100},
@@ -218,16 +218,14 @@ int main()
 
     bool Mleft = false, Mright = false, Mmid = false;
     unsigned short W = 1600, H = 900,fov=90;
-    float aspect = W / H,Zfar=1000.f,Znear=1.f;
-
+    float aspect = W / H,Zfar=100000.f,Znear=0.f;
+    int time = 0;
     world Floor1;
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distW(0, W);//rand pos x
     std::uniform_int_distribution<> distH(0, H);//rand pos y
-
-    sf::Vector2f Mmove = { 0.f,0.f };
 
     sf::RenderWindow window(sf::VideoMode(W, H), "SFML");
     window.setFramerateLimit(120);
@@ -245,13 +243,13 @@ int main()
     sf::VertexArray VAB;
 
     while (window.isOpen()) {
-
+        if (time == 20) time = 0;
         Mleft = false;
         Mright = false;
         Mmid = false;
 
         sf::Event event;
-
+        if (window.hasFocus())   sf::Mouse::setPosition(sf::Vector2i(W/2, H/2), window);
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed) {
@@ -262,16 +260,16 @@ int main()
         if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) Mright = true;
         if (sf::Mouse::isButtonPressed(sf::Mouse::Middle)) Mmid = true;
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) Camera1.move(50.f, 0.f, 0.f);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) Camera1.move(0.f, 0.f, 50.f);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) Camera1.move(-50.f, 0.f, 0.f);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) Camera1.move(0.f, 0.f, -50.f);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) Camera1.move(10.f, 0.f, 0.f);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) Camera1.move(0.f, 0.f, 10.f);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) Camera1.move(-10.f, 0.f, 0.f);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) Camera1.move(0.f, 0.f, -10.f);
 
 
-        if (event.type == sf::Event::MouseMoved) {
-            sf::Vector2i mousePos = sf::Mouse::getPosition(window)/2;
-            Camera1.rotate(mousePos.x, mousePos.y, 0.f);
-        }
+        
+        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+        Camera1.rotate( (mousePos.x-W/2)*0.01f , (mousePos.y-H/2) * 0.01f, 0.f);
+        
 
         //UPD pipeline wrldcoords->cameracoords->clipcoords->normalcoords->screencoords
         for (int i = 0; i < Floor1.worldFloor.size(); i++)
@@ -288,14 +286,17 @@ int main()
         //
 
         //debug 1st poligon pos on screen
-        std::cout << "0  " << VAB[0].position.x << "  " << VAB[0].position.y 
-                  << "1  " << VAB[1].position.x << "  " << VAB[1].position.y 
-                  << "2  " << VAB[2].position.x << "  " << VAB[2].position.y
-                  <<std::endl;
+        if (time==19)
+        {
+        std::cout << " x  " << Camera1.camPos.x << " y  " << Camera1.camPos.y
+            << " z  " << Camera1.camPos.z << std::endl;
+        std::cout << "look at x " << Camera1.ForwardVec.x << " y " << Camera1.ForwardVec.y
+            << " z " << Camera1.ForwardVec.z << std::endl;
+        }
         window.clear();
         window.draw(VAB);
         window.display();
-
+        time++;
 
     };
     return 0;
