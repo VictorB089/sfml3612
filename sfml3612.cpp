@@ -22,6 +22,9 @@ public:
         w = 0.f;
     }
     vec4f(float x, float y, float z,float w) : x(x), y(y), z(z), w(w) {};
+    vec4f operator+(const vec4f& other) {
+        return vec4f{ x + other.x,y + other.y ,z + other.z ,w + other.w };
+    }
 };
 class mat4f {
 public:
@@ -78,6 +81,21 @@ mat4f Tmat(mat4f mat) {
     result.mat[12] = mat.mat[3]; result.mat[13] = mat.mat[7]; result.mat[14] = mat.mat[11]; result.mat[15] = mat.mat[15];     //12,13,14,15   m-->
     return result;
 }
+sf::Vector3f mltplyVec3fVec3f(sf::Vector3f vec1, sf::Vector3f vec2) {
+    sf::Vector3f result;
+    result = {
+    vec1.y * vec2.z - vec1.z * vec2.y,
+    vec1.z * vec2.x - vec1.x * vec2.z,
+    vec1.x * vec2.y - vec1.y * vec2.x
+    };
+    return result;
+}
+float scalarVec4Prod(vec4f vec1,vec4f vec2) {
+    return vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z;
+}
+vec4f mltplyVecFloat(float a, vec4f vec) {
+    return { vec.x * a,vec.y * a ,vec.z * a ,vec.w * a };
+}
 
 sf::Vector3f toCameraPos(vec4f CamCoordPos, float aspect,float Zfar,float Znear,int fov) {//UPD pipeline cameracoords->clipcoords->normalcoords
     vec4f inCamPos;
@@ -95,10 +113,11 @@ sf::Vector2f toScrnPospx(float x, float y,int W,int H) {//UPD pipeline normalcoo
     return { ( ( (x - 1) / 2) * W),( ( (1 - y) / 2) * H) };
 }
 
-sf::VertexArray drawPoligons(std::vector<sf::Vector2f> VBO) {
+sf::VertexArray drawPoligons(std::vector<sf::Vector2f> VBO,std::vector<sf::Color> color) {
     sf::VertexArray poligons(sf::Triangles,VBO.size());
     for (int i = 0; i < VBO.size(); i++) {
         poligons[i].position = VBO[i];
+        poligons[i].color = sf::Color::Green;
     }
     return poligons;
 }
@@ -108,18 +127,59 @@ private:
     unsigned short fov;
     mat4f ViewMat;
 public:
+    vec4f camPos =      { 0.f,1.f,0.f,1.f };
+    vec4f rightVec =    { 1.f,0.f,0.f,1.f };
+    vec4f topVec =      { 0.f,1.f,0.f,1.f };
+    vec4f ForwardVec =  { 0.f,0.f,1.f,1.f };
     camera(int fov) : fov(fov) {
-        ViewMat.mat = { 1.f, 0.f, 0.f, 0.f,    //rvecx rvecy rvecz -camposvecx
-                        0.f, 1.f, 0.f,-1.f,    //uvecx uvecy uvecz -camposvecy
-                        0.f, 0.f, 1.f, 0.f,    //vvecx vvecy vvecz -camposvecz
-                        0.f, 0.f, 0.f, 1.f     //0     0     0      1
+        ViewMat.mat = { 1.f, 0.f, 0.f, 0.f,    //rvecx  rvecy  rvecz  -camposvecx
+                        0.f, 1.f, 0.f,-1.f,    //tvecx  tvecy  tvecz  -camposvecy
+                        0.f, 0.f, 1.f, 0.f,    //fwvecx fwvecy fwvecz -camposvecz
+                        0.f, 0.f, 0.f, 1.f     //0      0      0       1
         };
     };
 
-    void moveTo(float x, float y, float z) {
-        ViewMat.mat[3]  = -x;
-        ViewMat.mat[7]  = -y;
-        ViewMat.mat[11] = -z;
+    void move(float dx, float dy, float dz) {
+        camPos = camPos + mltplyVecFloat(dx, rightVec) + mltplyVecFloat(dy, topVec) + mltplyVecFloat(dz, ForwardVec);
+    }
+    void rotate(float yaw,float pitch,float roll) 
+    {
+        mat4f R,Ryaw,Rpitch,Rroll;
+        //yaw()
+        Ryaw.mat = {
+        cos(yaw),   0.f,  sin(yaw), 0.f,
+        0.f,        1.f,  0.f,      0.f,
+        -sin(yaw),  0.f,  cos(yaw), 0.f,
+        0.f,        0.f,  0.f,      1.f
+        };
+        //pitch()
+        Rpitch.mat = {
+        1.f,0.f,        0.f,        0.f,
+        0.f,cos(pitch),-sin(pitch),0.f,
+        0.f,sin(pitch), cos(pitch),0.f,
+        0.f,0.f,        0.f,       1.f
+        };
+        //roll()
+        Rroll.mat = {
+        cos(roll),-sin(roll),0.f,0.f,
+        sin(roll),cos(roll), 0.f,0.f,
+        0.f,      0.f,       1.f,0.f,
+        0.f,      0.f,       0.f,1.f
+        };
+        R = mltplyMatMat(mltplyMatMat(Ryaw, Rpitch), Rroll);//temp mat4f R
+        ForwardVec = mltplyMatVec(R, ForwardVec);//new Forward
+        topVec = mltplyMatVec(R, topVec);
+        sf::Vector3f tempvec3f = mltplyVec3fVec3f( { ForwardVec.x, ForwardVec.y, ForwardVec.z }, { topVec.x, topVec.y, topVec.z } );
+        rightVec = { tempvec3f.x ,tempvec3f.y ,tempvec3f.z ,1.f};//new right
+        tempvec3f = mltplyVec3fVec3f({ ForwardVec.x, ForwardVec.y, ForwardVec.z }, { rightVec.x, rightVec.y, rightVec.z });
+        topVec = { tempvec3f.x ,tempvec3f.y ,tempvec3f.z ,1.f };//new top
+        ViewMat.mat = {
+            rightVec.x,  rightVec.y,  rightVec.z,  -scalarVec4Prod(camPos,rightVec),
+            topVec.x,    topVec.y,    topVec.z,    -scalarVec4Prod(camPos,topVec),
+            ForwardVec.x,ForwardVec.y,ForwardVec.z,-scalarVec4Prod(camPos,ForwardVec),
+            0.f,         0.f,         0.f,          1.f
+        };
+
     }
     vec4f toCamCoords(sf::Vector3f pos) {//UPD pipeline wrldcoords->cameracoords
         vec4f inCamCoords;
@@ -130,16 +190,25 @@ public:
 
 class world {
 private:
-    sf::Color floorColor=sf::Color(100,100,100);
     sf::Color skyColor=sf::Color::Cyan;
     float groundLevel = 0.f;
 public:
     world() {}
     std::vector<sf::Vector3f> worldFloor = {
-        {5000.f,0.f,-5000.f},
-        {5000.f,0.f,5000.f},
-        {-5000.f,0.f,-5000.f},
-        {-5000.f,0.f,5000.f}
+        {10.f,0.f,10.f},
+        {10.f,0.f,0.f},
+        {0.f,0.f,0.f},
+        {10.f,0.f,0.f},
+        {0.f,0.f,0.f},
+        {-10.f,0.f,-10.f}
+    };
+    std::vector<sf::Color> floorColor = {
+        {100,100,100},
+        {100,100,100},
+        {100,100,100},
+        {100,100,100}, 
+        {100,100,100},
+        {100,100,100},
     };
 };
 
@@ -158,7 +227,7 @@ int main()
     std::uniform_int_distribution<> distW(0, W);//rand pos x
     std::uniform_int_distribution<> distH(0, H);//rand pos y
 
-    std::vector<float> Mmove = { 0.f,0.f };
+    sf::Vector2f Mmove = { 0.f,0.f };
 
     sf::RenderWindow window(sf::VideoMode(W, H), "SFML");
     window.setFramerateLimit(120);
@@ -193,8 +262,15 @@ int main()
         if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) Mright = true;
         if (sf::Mouse::isButtonPressed(sf::Mouse::Middle)) Mmid = true;
 
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) Camera1.move(50.f, 0.f, 0.f);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) Camera1.move(0.f, 0.f, 50.f);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) Camera1.move(-50.f, 0.f, 0.f);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) Camera1.move(0.f, 0.f, -50.f);
+
+
         if (event.type == sf::Event::MouseMoved) {
-            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+            sf::Vector2i mousePos = sf::Mouse::getPosition(window)/2;
+            Camera1.rotate(mousePos.x, mousePos.y, 0.f);
         }
 
         //UPD pipeline wrldcoords->cameracoords->clipcoords->normalcoords->screencoords
@@ -208,9 +284,14 @@ int main()
         for (int i = 0; i < tempv3fcoords.size(); i++) {
             tempv2fcoords[i] = toScrnPospx(tempv3fcoords[i].x, tempv3fcoords[i].y,W,H);//normalcoords->screencoords
         }
-        VAB = drawPoligons(tempv2fcoords);//screencoords->poligons->VertexArrayBuffer VAB
+        VAB = drawPoligons(tempv2fcoords,Floor1.floorColor);//screencoords->poligons->VertexArrayBuffer VAB
         //
 
+        //debug 1st poligon pos on screen
+        std::cout << "0  " << VAB[0].position.x << "  " << VAB[0].position.y 
+                  << "1  " << VAB[1].position.x << "  " << VAB[1].position.y 
+                  << "2  " << VAB[2].position.x << "  " << VAB[2].position.y
+                  <<std::endl;
         window.clear();
         window.draw(VAB);
         window.display();
