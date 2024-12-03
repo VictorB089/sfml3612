@@ -1,5 +1,5 @@
 ﻿  sfml3612.cpp
-C:\Users\DesktopV\source\repos\sfml3612\sfml3612.cpp(221,18): warning C4244: инициализация: преобразование "int" в "float", возможна потеря данных
+C:\Users\DesktopV\source\repos\sfml3612\sfml3612.cpp(223,18): warning C4244: инициализация: преобразование "int" в "float", возможна потеря данных
 sfml-graphics-s-d.lib(Color.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(Color.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
 sfml-graphics-s-d.lib(VertexArray.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(VertexArray.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных
 sfml-graphics-s-d.lib(RenderTarget.obj) : warning LNK4099: "" PDB не найден с "sfml-graphics-s-d.lib(RenderTarget.obj)" или на ""; компоновка объекта выполняется как при отсутствии отладочных данных

@@ -195,9 +195,9 @@ private:
 public:
     world() {}
     std::vector<sf::Vector3f> worldFloor = {
-        {10.f,2.f,10.f},
-        {-10.f,2.f,10.f},
-        {0.f,10.f,10.f},
+        {1.f,0.f,1.f},
+        {-1.f,0.f,1.f},
+        {0.5f,1.f,0.5f},
         //{10.f,0.f,0.f},
         //{0.f,0.f,0.f},
         //{-10.f,0.f,-10.f}
@@ -216,9 +216,11 @@ int main()
 {
     
 
-    bool Mleft = false, Mright = false, Mmid = false;
-    unsigned short W = 1600, H = 900,fov=90;
-    float aspect = W / H,Zfar=100000.f,Znear=0.f;
+    bool Mleft = false, Mright = false, Mmid = false,
+        keyW = false, keyA = false, keyS = false, keyD = false;
+    unsigned short W = 1600, H = 900;
+    int fov = 1000;
+    float aspect = W / H,Zfar=100.f,Znear=10.f;
     int time = 0;
     world Floor1;
 
@@ -247,6 +249,10 @@ int main()
         Mleft = false;
         Mright = false;
         Mmid = false;
+        keyW = false; 
+        keyA = false; 
+        keyS = false; 
+        keyD = false;
 
         sf::Event event;
         if (window.hasFocus())   sf::Mouse::setPosition(sf::Vector2i(W/2, H/2), window);
@@ -260,15 +266,26 @@ int main()
         if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) Mright = true;
         if (sf::Mouse::isButtonPressed(sf::Mouse::Middle)) Mmid = true;
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) Camera1.move(10.f, 0.f, 0.f);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) Camera1.move(0.f, 0.f, 10.f);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) Camera1.move(-10.f, 0.f, 0.f);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) Camera1.move(0.f, 0.f, -10.f);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) keyW = true; 
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) keyA = true; 
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) keyS = true; 
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) keyD = true; 
+        /*
+        if (keyW) Camera1.move(10.f, 0.f, 0.f);
+        if (keyA) Camera1.move(0.f, 0.f, 10.f);
+        if (keyS) Camera1.move(-10.f, 0.f, 0.f);
+        if (keyD) Camera1.move(0.f, 0.f, -10.f);
+        */
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) Camera1.move(10.f, 0.f, 0.f);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) Camera1.move(-10.f, 0.f, 0.f);
 
+        if (keyW) Camera1.rotate(0.f, 0.01f, 0.f);
+        if (keyA) Camera1.rotate(0.01f, 0.f, 0.f);
+        if (keyS) Camera1.rotate(0.f, -0.01f, 0.f);
+        if (keyD) Camera1.rotate(-0.01f, 0.f, 0.f);
 
-        
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-        Camera1.rotate( (mousePos.x-W/2)*0.01f , (mousePos.y-H/2) * 0.01f, 0.f);
+        //Camera1.rotate( (mousePos.x-W/2)*0.01f , (mousePos.y-H/2) * 0.01f, 0.f);
         
 
         //UPD pipeline wrldcoords->cameracoords->clipcoords->normalcoords->screencoords
@@ -286,13 +303,12 @@ int main()
         //
 
         //debug 1st poligon pos on screen
-        if (time==19)
-        {
         std::cout << " x  " << Camera1.camPos.x << " y  " << Camera1.camPos.y
             << " z  " << Camera1.camPos.z << std::endl;
         std::cout << "look at x " << Camera1.ForwardVec.x << " y " << Camera1.ForwardVec.y
             << " z " << Camera1.ForwardVec.z << std::endl;
-        }
+        std::cout << " x1 " << VAB[0].position.x << " y1 " << VAB[0].position.y
+            << " x2 " << VAB[1].position.x <<" y2 " << VAB[1].position.y << std::endl;
         window.clear();
         window.draw(VAB);
         window.display();
